@@ -86,26 +86,26 @@ func detectPII(text string) []span {
 		if isInSSHCommandContext(text, m[0]) {
 			continue
 		}
-		spans = append(spans, span{m[0], m[1], "[邮箱]"})
+		spans = append(spans, span{m[0], m[1], "[REDACTED_EMAIL]"})
 	}
 	for _, m := range rePhoneCN.FindAllStringIndex(text, -1) {
 		if digitBounded(text, m[0], m[1]) {
-			spans = append(spans, span{m[0], m[1], "[电话]"})
+			spans = append(spans, span{m[0], m[1], "[REDACTED_PHONE]"})
 		}
 	}
 	for _, m := range reIDCard.FindAllStringIndex(text, -1) {
 		if digitBounded(text, m[0], m[1]) {
-			spans = append(spans, span{m[0], m[1], "[身份证]"})
+			spans = append(spans, span{m[0], m[1], "[REDACTED_ID_CARD]"})
 		}
 	}
 	for _, m := range reIPv4.FindAllStringIndex(text, -1) {
 		if ipBounded(text, m[0], m[1]) {
-			spans = append(spans, span{m[0], m[1], "[IP]"})
+			spans = append(spans, span{m[0], m[1], "[REDACTED_IP]"})
 		}
 	}
 	for _, m := range reBankCard.FindAllStringIndex(text, -1) {
 		if digitBounded(text, m[0], m[1]) && luhnValid(text[m[0]:m[1]]) {
-			spans = append(spans, span{m[0], m[1], "[银行卡]"})
+			spans = append(spans, span{m[0], m[1], "[REDACTED_BANK_CARD]"})
 		}
 	}
 	return spans
