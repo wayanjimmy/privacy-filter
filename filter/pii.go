@@ -15,6 +15,12 @@ var (
 	reIPv4     = regexp.MustCompile(`(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9]?[0-9])`)
 )
 
+// skipIPv4 是 IPv4 检测的豁免名单。命中即跳过脱敏。
+// 扩展豁免（如 127.0.0.0/8 整段、::1）只需往 map 里加项。
+var skipIPv4 = map[string]bool{
+	"127.0.0.1": true, // loopback / localhost
+}
+
 // 远程命令前缀。user@host 出现在这些命令上下文里通常是 SSH 目标，不是邮箱。
 var sshCommands = []string{"ssh ", "scp ", "rsync ", "sftp ", "ssh-copy-id ", "ssh-keygen "}
 
@@ -99,9 +105,13 @@ func detectPII(text string) []span {
 		}
 	}
 	for _, m := range reIPv4.FindAllStringIndex(text, -1) {
-		if ipBounded(text, m[0], m[1]) {
-			spans = append(spans, span{m[0], m[1], "[REDACTED_IP]"})
+		if !ipBounded(text, m[0], m[1]) {
+			continue
 		}
+		if skipIPv4[text[m[0]:m[1]]] {
+			continue
+		}
+		spans = append(spans, span{m[0], m[1], "[REDACTED_IP]"})
 	}
 	for _, m := range reBankCard.FindAllStringIndex(text, -1) {
 		if digitBounded(text, m[0], m[1]) && luhnValid(text[m[0]:m[1]]) {

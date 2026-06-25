@@ -27,7 +27,7 @@ The latter two are thin wrappers around the `filter` core package.
 | Secrets / credentials | API keys, tokens, private keys, passwords written in prose, unknown high-entropy strings | gitleaks ruleset (keyword pre-filter) + contextual regex + Shannon-entropy fallback |
 
 Each layer emits `(start, end, placeholder)` spans → spans are merged and de-overlapped → the text is rebuilt in a single pass.
-Placeholders are typed and carry the entity kind — `[邮箱]` (email), `[电话]` (phone), `[身份证]` (national ID), `[银行卡]` (bank card), `[IP]`, `[密钥]` (secret) — and are irreversible (no un-redaction).
+Placeholders are typed and carry the entity kind — `[REDACTED_EMAIL]` (email), `[REDACTED_PHONE]` (phone), `[REDACTED_ID_CARD]` (national ID), `[REDACTED_BANK_CARD]` (bank card), `[REDACTED_IP]`, `[REDACTED_SECRET]` (secret) — and are irreversible (no un-redaction).
 
 > No person / place / organization name recognition — that needs an NER model, which costs seconds of CPU time on long text and was removed per requirements.
 > High-risk identity data (national ID, bank card, secrets, etc.) is fully covered by regex.

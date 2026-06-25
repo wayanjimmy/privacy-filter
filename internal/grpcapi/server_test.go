@@ -45,7 +45,7 @@ func TestGRPCRedact(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Redact: %v", err)
 	}
-	if !strings.Contains(resp.GetRedacted(), "[邮箱]") || !strings.Contains(resp.GetRedacted(), "[密钥]") {
+	if !strings.Contains(resp.GetRedacted(), "[REDACTED_EMAIL]") || !strings.Contains(resp.GetRedacted(), "[REDACTED_SECRET]") {
 		t.Errorf("脱敏不全: %q", resp.GetRedacted())
 	}
 	if !resp.GetHit() || resp.GetCount() < 2 {

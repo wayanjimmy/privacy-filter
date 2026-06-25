@@ -57,6 +57,50 @@ func TestBankCardInvalidLuhnIgnored(t *testing.T) {
 	}
 }
 
+func TestIPv4LoopbackExcluded(t *testing.T) {
+	f := newFilter(t)
+	cases := []struct {
+		name         string
+		in           string
+		wantPreserve string
+		wantRedact   string
+	}{
+		{
+			"trailing port keeps loopback, redacts other",
+			"connect to 127.0.0.1:8080 then to 10.0.0.5",
+			"127.0.0.1",
+			"10.0.0.5",
+		},
+		{
+			"multiple loopbacks all preserved",
+			"127.0.0.1 routes to 127.0.0.1 internally",
+			"127.0.0.1",
+			"",
+		},
+		{
+			"127/8 non-loopback still redacted",
+			"host 127.1.2.3 listening",
+			"",
+			"127.1.2.3",
+		},
+		{
+			"loopback mixed with secrets still detected",
+			"local 127.0.0.1, remote token=abc123XYZdef456GHIjkl",
+			"127.0.0.1",
+			"abc123XYZdef456GHIjkl",
+		},
+	}
+	for _, c := range cases {
+		got := redact(t, f, c.in)
+		if c.wantPreserve != "" && !strings.Contains(got, c.wantPreserve) {
+			t.Errorf("%s: expected %q preserved, got %q", c.name, c.wantPreserve, got)
+		}
+		if c.wantRedact != "" && strings.Contains(got, c.wantRedact) {
+			t.Errorf("%s: expected %q redacted, got %q", c.name, c.wantRedact, got)
+		}
+	}
+}
+
 // --- 密钥层 ---
 
 func TestGitleaksRulesLoaded(t *testing.T) {
