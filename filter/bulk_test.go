@@ -300,10 +300,16 @@ func genPII() []bulkCase {
 		out = append(out, bulkCase{"pii-bank", "prose", "付款卡号 " + c, true})
 	}
 	// IPv4
-	ips := []string{"192.168.1.1", "10.0.0.1", "172.16.0.1", "8.8.8.8", "127.0.0.1", "255.255.255.0"}
+	ips := []string{"192.168.1.1", "10.0.0.1", "172.16.0.1", "8.8.8.8", "255.255.255.0"}
 	for _, ip := range ips {
 		out = append(out, bulkCase{"pii-ip", "raw", ip, true})
 		out = append(out, bulkCase{"pii-ip", "prose", "服务器 IP " + ip + " 已部署", true})
+	}
+	// Loopback is excluded from redaction (kept as-is)
+	loopbacks := []string{"127.0.0.1"}
+	for _, ip := range loopbacks {
+		out = append(out, bulkCase{"pii-ip", "loopback raw", ip, false})
+		out = append(out, bulkCase{"pii-ip", "loopback prose", "本地 IP " + ip + " 已部署", false})
 	}
 	return out
 }
@@ -858,12 +864,17 @@ func genIPVariations() []bulkCase {
 	var out []bulkCase
 	v4hit := []string{
 		"192.168.1.1", "10.0.0.1", "172.16.0.1", "8.8.8.8",
-		"1.1.1.1", "127.0.0.1", "255.255.255.0",
+		"1.1.1.1", "255.255.255.0",
 		"client 192.168.1.42 connected",
 		"src=10.0.0.15 dst=10.0.0.16",
 	}
 	for _, ip := range v4hit {
 		out = append(out, bulkCase{"ip-v4", "v4", ip, true})
+	}
+	// Loopback is excluded from redaction
+	loopbackIPs := []string{"127.0.0.1"}
+	for _, ip := range loopbackIPs {
+		out = append(out, bulkCase{"ip-v4", "v4 loopback", ip, false})
 	}
 	// 不是 IP 的串
 	notIP := []string{
